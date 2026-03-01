@@ -3,7 +3,7 @@ import telebot
 import random, string, json, time, os
 
 BOT_TOKEN = os.environ.get("8763124556:AAE4tLkBEUFs_Dx-xewEAhbG5QNTjsenC3Y")
-BOT_USERNAME = "Getcontent2026_bot"   # yaha apna bot username likho (without @)
+BOT_USERNAME = "Getcontent2026_bot"   # apna verify bot username without @
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
@@ -27,8 +27,9 @@ def generate_token():
 @app.route("/")
 def home():
     ref = request.headers.get("Referer")
+    file_code = request.args.get("file")
 
-    if not ref:
+    if not ref or not file_code:
         return "Access Denied"
 
     token = generate_token()
@@ -37,7 +38,7 @@ def home():
     tokens[token] = {
         "time": time.time(),
         "used": False,
-        "ip": request.remote_addr
+        "file_code": file_code
     }
 
     save_tokens(tokens)
@@ -66,8 +67,11 @@ def start(message):
             tokens[user_token]["used"] = True
             save_tokens(tokens)
 
-            bot.send_message(message.chat.id, "✅ Verification Successful!")
-            bot.send_document(message.chat.id, open("file.zip", "rb"))
+            file_code = token_data["file_code"]
+            final_link = f"https://t.me/FileStoreBot?start={file_code}"
+
+            bot.send_message(message.chat.id,
+            f"✅ Verification Successful!\n\nClick below to get file:\n{final_link}")
 
         else:
             bot.send_message(message.chat.id, "❌ Invalid or Bypassed Link.")
